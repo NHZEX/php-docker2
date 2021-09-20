@@ -37,7 +37,7 @@ RUN set -eux \
     && docker-php-source delete \
     && apt-get autoremove -y \
     && apt clean \
-    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /var/lib/apt/lists/*
 
 RUN set -eux \
     && php -v \
