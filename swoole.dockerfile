@@ -3,11 +3,14 @@ ARG SWOOLE_VERSION
 FROM phpswoole/swoole:${SWOOLE_VERSION}
 
 ARG PHP_JIT="0"
-ARG MIRROR_CN="0"
+ARG MIRROR_CN=""
+ARG POSTGRESQL_VER=""
 
 RUN set -eux \
-    && ([ "${MIRROR_CN}" = "0" ] || sed -i "s@http://deb.debian.org@http://mirrors.tuna.tsinghua.edu.cn@g" /etc/apt/sources.list) \
-    && ([ "${MIRROR_CN}" = "0" ] || sed -i "s|security.debian.org/debian-security|mirrors.tuna.tsinghua.edu.cn/debian-security|g" /etc/apt/sources.list) \
+    && if [ -n "${MIRROR_CN}" ]; then \
+      sed -i "s@//deb.debian.org@//mirrors.tuna.tsinghua.edu.cn@g" /etc/apt/sources.list \
+      && sed -i "s|security.debian.org/debian-security|mirrors.tuna.tsinghua.edu.cn/debian-security|g" /etc/apt/sources.list \
+    ; fi \
     && apt-get update \
     && apt-get -y install procps libpq-dev unzip git libevent-dev libssl-dev \
     && docker-php-source extract \
@@ -18,7 +21,17 @@ RUN set -eux \
     && docker-php-ext-enable inotify \
     && pecl install event \
     && docker-php-ext-enable --ini-name z-event.ini event \
-    && curl -L -o ext-postgresql.tar.gz https://github.com/swoole/ext-postgresql/archive/f5eda17f89d160d0a89ac7c5db4636bdaefd48e6.tar.gz && tar -xvf ext-postgresql.tar.gz && cd ext-postgresql-f5eda17f89d160d0a89ac7c5db4636bdaefd48e6 && phpize && ./configure && make -j && make install && docker-php-ext-enable swoole_postgresql && php --ri swoole_postgresql\
+    # install swoole postgresql \
+    && if [ -n "${POSTGRESQL_VER}" ]; then \
+      curl -L -o /tmp/ext-postgresql.tar.gz https://github.com/swoole/ext-postgresql/archive/${POSTGRESQL_VER}.tar.gz \
+      && mkdir -p /tmp/ext-postgresql \
+      && tar -zxvf /tmp/ext-postgresql.tar.gz -C /tmp/ext-postgresql --strip-components=1 \
+      && cd /tmp/ext-postgresql \
+      && phpize && ./configure \
+      && make -j && make install \
+      && docker-php-ext-enable swoole_postgresql \
+      && php --ri swoole_postgresql \
+    ; fi \
     && ( \
         [ $(php -r "echo PHP_VERSION_ID < 80000 ? 1 : 0;") = "0" ] \
         || (pecl install hprose && docker-php-ext-enable hprose) \
