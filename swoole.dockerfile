@@ -37,4 +37,11 @@ RUN set -eux \
     && docker-php-source delete \
     && apt-get autoremove -y \
     && apt clean \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+
+RUN set -eux \
+    && php -v \
+    && php -m \
+    && php --ri swoole \
+    && php -r "echo 'opcache config: '; print_r(opcache_get_status(false));" \
+    && composer -V
