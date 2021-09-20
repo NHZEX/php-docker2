@@ -1,6 +1,6 @@
 ARG SWOOLE_VERSION
 
-FROM phpswoole/swoole:${SWOOLE_VERSION}
+FROM registry.hub.docker.com/phpswoole/swoole:${SWOOLE_VERSION}
 
 ARG PHP_JIT="0"
 ARG MIRROR_CN=""
