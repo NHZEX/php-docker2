@@ -6,7 +6,7 @@ ARG PHP_JIT="0"
 ARG MIRROR_CN=""
 ARG POSTGRESQL_VER=""
 
-COPY script/ /tmp/script
+COPY --chown=root:root script/ /tmp/script
 
 RUN set -eux \
     && if [ -n "${MIRROR_CN}" ]; then \
